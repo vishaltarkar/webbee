@@ -37,7 +37,92 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('about');
+            $table->string('poster');
+            $table->string('trailer_url');
+            $table->number('duration')->comment('In minutes');
+            $table->string('languages')->comment('Example: ["english", "hindi"]'); // Reference ids can be used or separate table to manage
+            $table->string('genre')->comment('Example: ["action", "horror"]'); // Reference ids can be used or separate table to manage
+            $table->string('screen_type')->comment('Example: ["3D", "2D"]'); // Reference ids can be used or separate table to manage
+            $table->date('release_on');
+            $table->string('certificate');
+            $table->timestamps();
+        });
+
+        Schema::create('casts', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('photo');
+            $table->timestamps();
+        });
+
+        Schema::create('crews', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('photo');
+            $table->timestamps();
+        });
+
+        // Movie-Cast Mapping Table
+        Schema::create('movie-casts', function (Blueprint $table) {
+            $table->id();
+
+            $table->unsignedBigInteger('movie_id');
+            $table->foreign('movie_id')->references('id')->on('moveis')->onDelete('restrict');
+
+            $table->unsignedBigInteger('cast_id');
+            $table->foreign('cast_id')->references('id')->on('casts')->onDelete('restrict');
+
+            $table->timestamps();
+        });
+
+        // Movie-Crew Mapping Table
+        Schema::create('movie-crews', function (Blueprint $table) {
+            $table->id();
+
+            $table->unsignedBigInteger('movie_id');
+            $table->foreign('movie_id')->references('id')->on('moveis')->onDelete('restrict');
+
+            $table->unsignedBigInteger('crew_id');
+            $table->foreign('crew_id')->references('id')->on('crews')->onDelete('restrict');
+
+            $table->timestamps();
+        });
+
+
+        // Show Tables
+        Schema::create('movie-shows', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('movie_id');
+            $table->foreign('movie_id')->references('id')->on('moveis')->onDelete('restrict');
+            $table->date('show_date');
+            $table->time('show_time');
+            $table->decimal('ticket_price', 8, 2);
+            $table->number('total_seats');
+            $table->number('booked_seats');
+            $table->boolean('status')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('show_id');
+            $table->foreign('show_id')->references('id')->on('movie-shows')->onDelete('restrict');
+
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('restrict');
+
+            $table->integer('total_tickets');
+
+            $table->timestamps();
+        });
+
+        // I haven't put much thought about seat booking and their different type
+
+        // throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
     }
 
     /**
